@@ -4,14 +4,21 @@ import pandas as pd
 import logging
 from datetime import datetime
 
+# --------------------
+# LOGGING SETUP
+# --------------------
 logging.basicConfig(
     filename='scraper.log',
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
+# --------------------
+# CONSTANTS
+# --------------------
 BASE_URL = "https://vacancymail.co.zw/jobs"
 HEADERS = {'User-Agent': 'Mozilla/5.0'}
+
 
 def scrape_jobs():
     try:
@@ -39,11 +46,13 @@ def scrape_jobs():
                 title = job.select_one('h3.job-listing-title')
                 company = job.select_one('h4.job-listing-company')
                 description = job.select_one('p.job-listing-text')
- 
+
+                
                 title = title.get_text(strip=True) if title else "No Title"
                 company = company.get_text(strip=True) if company else "No Company"
                 description = description.get_text(strip=True) if description else "No Description"
 
+                
                 footer_items = job.select('div.job-listing-footer li')
                 location = expiry = "Unknown"
 
@@ -72,6 +81,7 @@ def scrape_jobs():
             print("❌ No jobs scraped. Something went wrong.")
             return
 
+      
         df = pd.DataFrame(job_list)
         df.drop_duplicates(subset=["Job Title", "Company", "Location"], inplace=True)
         df["Expiry Date"] = pd.to_datetime(df["Expiry Date"], errors='coerce').dt.strftime('%Y-%m-%d')
@@ -83,6 +93,7 @@ def scrape_jobs():
     except Exception as e:
         logging.error(f"Scraping failed: {e}")
         print("❌ Something went wrong. Check scraper.log for details.")
+
 
 if __name__ == "__main__":
     print("🚀 Running web scraper now...\n")
